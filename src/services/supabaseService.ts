@@ -1,3 +1,8 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import { supabase } from "@/lib/supabase";
 import { PRODUCTS, CATEGORIES_LIST, type Product } from "@/data/products";
 
@@ -29,11 +34,27 @@ export async function fetchProductsFromSupabase(): Promise<Product[]> {
       weeklyOrdersCount: row.weekly_orders_count || 15,
       isNewDesign: !!row.is_new_design,
       releaseTag: row.release_tag || "Colección",
+      isSoldOut: !!row.is_sold_out,
+      stockQuantity: row.stock_quantity !== undefined && row.stock_quantity !== null ? row.stock_quantity : 15,
     }));
   } catch {
     const local = localStorage.getItem("maranatha_admin_products");
     if (local) return JSON.parse(local);
     return PRODUCTS;
+  }
+}
+
+export async function updateProductInventoryInSupabase(productId: string, isSoldOut: boolean, stockQuantity: number) {
+  try {
+    await supabase
+      .from("products")
+      .update({
+        is_sold_out: isSoldOut,
+        stock_quantity: stockQuantity,
+      })
+      .eq("id", productId);
+  } catch (err) {
+    console.warn("Supabase inventory update warning:", err);
   }
 }
 

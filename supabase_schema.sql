@@ -16,7 +16,7 @@ create table if not exists categories (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- 2. Products Table (Stores shop products, weekly top, new designs)
+-- 2. Products Table (Stores shop products, weekly top, new designs, inventory)
 create table if not exists products (
   id text primary key,
   title text not null,
@@ -35,6 +35,8 @@ create table if not exists products (
   weekly_orders_count integer default 10,
   is_new_design boolean default false,
   release_tag text,
+  is_sold_out boolean default false,
+  stock_quantity integer default 15,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 

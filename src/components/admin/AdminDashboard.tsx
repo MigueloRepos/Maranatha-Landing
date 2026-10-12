@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { PRODUCTS, CATEGORIES_LIST, type Product, type ProductCategory } from "@/data/products";
 import { Button } from "@/components/ui/button";
-import { fetchProductsFromSupabase, fetchCategoriesFromSupabase } from "@/services/supabaseService";
+import { fetchProductsFromSupabase, fetchCategoriesFromSupabase, updateProductInventoryInSupabase } from "@/services/supabaseService";
 import { supabase } from "@/lib/supabase";
 import { WhatsAppBroadcastModal } from "./WhatsAppBroadcastModal";
 
@@ -38,7 +38,7 @@ interface WhatsAppOrderLog {
 }
 
 export function AdminDashboard({ onClose }: AdminDashboardProps) {
-  const [activeTab, setActiveTab] = useState<"categories" | "bestsellers" | "newdesigns" | "analytics" | "whatsapp">("bestsellers");
+  const [activeTab, setActiveTab] = useState<"categories" | "bestsellers" | "newdesigns" | "analytics" | "whatsapp" | "inventory">("bestsellers");
   const [userEmail, setUserEmail] = useState<string>("");
 
   useEffect(() => {
@@ -258,6 +258,13 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     }
   };
 
+  const handleUpdateInventory = async (productId: string, isSoldOut: boolean, stockQuantity: number) => {
+    setProducts((prev) =>
+      prev.map((p) => (p.id === productId ? { ...p, isSoldOut, stockQuantity } : p))
+    );
+    await updateProductInventoryInSupabase(productId, isSoldOut, stockQuantity);
+  };
+
   // Analytics computed metrics
   const totalProducts = products.length;
   const bestsellersCount = products.filter((p) => p.isWeeklyTop).length;
@@ -388,7 +395,100 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
             <MessageCircle className="h-4 w-4 text-emerald-500" />
             <span>Mensajes WhatsApp ({whatsappLogs.length})</span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("inventory")}
+            className={`inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-all ${
+              activeTab === "inventory"
+                ? "bg-primary text-primary-foreground shadow-soft"
+                : "border border-border bg-card text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Package className="h-4 w-4" />
+            <span>Inventario ({products.filter((p) => p.isSoldOut).length} agotados)</span>
+          </button>
         </div>
+
+        {/* TAB: INVENTORY */}
+        {activeTab === "inventory" && (
+          <div className="mt-8 space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h2 className="font-display text-3xl font-medium text-foreground">Control de Inventario en Tiempo Real</h2>
+                <p className="text-sm text-muted-foreground">Marca productos como agotados o actualiza las cantidades disponibles instantáneamente.</p>
+              </div>
+            </div>
+
+            <div className="grid gap-4">
+              {products.map((product) => {
+                const isSoldOut = !!product.isSoldOut;
+                const stockQty = product.stockQuantity !== undefined ? product.stockQuantity : 15;
+
+                return (
+                  <div
+                    key={product.id}
+                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-[1.5rem] border border-border bg-card p-5 shadow-sm transition-all hover:border-gold/40"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-muted">
+                        <img src={product.img} alt={product.alt} className="h-full w-full object-cover" />
+                        {isSoldOut && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-[0.65rem] font-bold text-white px-1 text-center uppercase tracking-wider">
+                            Agotado
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-primary">{product.category}</span>
+                        <h3 className="font-display text-lg font-medium text-foreground">{product.title}</h3>
+                        <p className="text-xs text-muted-foreground">{product.price} • {product.leadTime}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-4 w-full sm:w-auto justify-between sm:justify-end pt-3 sm:pt-0 border-t sm:border-t-0 border-border">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-muted-foreground">Cantidad disponible:</span>
+                        <input
+                          type="number"
+                          min="0"
+                          value={stockQty}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value) || 0;
+                            handleUpdateInventory(product.id, isSoldOut, val);
+                          }}
+                          className="w-20 rounded-xl border border-border bg-background px-3 py-1.5 text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateInventory(product.id, !isSoldOut, stockQty)}
+                        className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold transition-all shadow-sm ${
+                          isSoldOut
+                            ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                            : "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        }`}
+                      >
+                        {isSoldOut ? (
+                          <>
+                            <Check className="h-3.5 w-3.5" />
+                            <span>Marcar Disponible</span>
+                          </>
+                        ) : (
+                          <>
+                            <X className="h-3.5 w-3.5" />
+                            <span>Marcar Agotado</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* TAB 1: BESTSELLERS */}
         {activeTab === "bestsellers" && (

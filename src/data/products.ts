@@ -26,6 +26,8 @@ export interface Product {
   weeklyOrdersCount?: number;
   isNewDesign?: boolean;
   releaseTag?: string;
+  isSoldOut?: boolean;
+  stockQuantity?: number;
 }
 
 export const PRODUCTS: Product[] = [
