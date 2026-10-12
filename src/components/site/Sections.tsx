@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Cake, Gem, Gift, Heart, Eye, Maximize2, Sparkles } from "lucide-react";
+import { Cake, Gem, Gift, Heart, Eye, Maximize2, Sparkles, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SITE, NAV_LINKS } from "@/config/site";
 import { CreationsGalleryModal, type CreationItem } from "@/components/site/CreationsGalleryModal";
@@ -355,10 +355,42 @@ export function FinalCta() {
   );
 }
 
-export function Footer() {
+export function Footer({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
   const extras = [SITE.address, SITE.hours, SITE.email].filter(Boolean);
+
+  const bakerySchema = {
+    "@context": "https://schema.org",
+    "@type": "Bakery",
+    "name": SITE.brand,
+    "description": `${SITE.tagline} - Pastelería artesanal y tortas de celebración personalizadas.`,
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Calle Mayor 45",
+      "addressLocality": "Madrid",
+      "postalCode": "28013",
+      "addressCountry": "ES"
+    },
+    "telephone": "+34612345678",
+    "url": typeof window !== "undefined" ? window.location.origin : "https://maranatha.app",
+    "openingHoursSpecification": [
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+        "opens": "09:00",
+        "closes": "20:00"
+      }
+    ],
+    "priceRange": "€€"
+  };
+
   return (
     <footer id="contacto" className="border-t border-border bg-card">
+      {/* Schema.org Structured Data (JSON-LD) for Local Google Search */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(bakerySchema) }}
+      />
+
       <div className="mx-auto flex max-w-6xl flex-col gap-10 px-5 py-14 md:flex-row md:items-start md:justify-between md:px-8">
         <div>
           <p className="font-display text-3xl text-foreground">{SITE.brand}</p>
@@ -369,6 +401,16 @@ export function Footer() {
           <p className="mt-4 max-w-xs text-sm text-muted-foreground">
             Para contactar, prepara tu solicitud desde el <a href="#encargos" className="text-primary underline underline-offset-4">formulario de encargos</a>.
           </p>
+          {onOpenAdmin && (
+            <button
+              type="button"
+              onClick={onOpenAdmin}
+              className="mt-5 inline-flex items-center gap-2 rounded-full border border-gold/40 bg-secondary px-4 py-2 text-xs font-semibold text-primary transition-all hover:bg-primary hover:text-primary-foreground active:scale-95 shadow-sm"
+            >
+              <Settings className="h-4 w-4" />
+              <span>Panel de Administración</span>
+            </button>
+          )}
         </div>
         <nav aria-label="Pie de página">
           <ul className="grid grid-cols-2 gap-x-10 gap-y-3 text-sm text-muted-foreground">

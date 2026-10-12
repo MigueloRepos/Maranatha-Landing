@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sparkles, ShoppingBag, MessageCircle, Maximize2, Tag, Clock, Users, ArrowRight } from "lucide-react";
-import { PRODUCTS, type ProductCategory, CATEGORIES_LIST } from "@/data/products";
+import { PRODUCTS, type ProductCategory, CATEGORIES_LIST, type Product } from "@/data/products";
 import { WHATSAPP_NUMBER } from "@/config/site";
 import { buildProductWhatsAppMessage, whatsappLink } from "@/lib/order";
 import { ScrollReveal, StaggerContainer, StaggerItem } from "@/components/ui/ScrollReveal";
 import { Lightbox, type LightboxItem } from "@/components/site/Lightbox";
+import { fetchProductsFromSupabase } from "@/services/supabaseService";
 
 interface NewDesignsProps {
   onSelectProductForOrder?: (productTitle: string) => void;
@@ -14,8 +15,15 @@ export function NewDesigns({ onSelectProductForOrder }: NewDesignsProps = {}) {
   const [selectedCategory, setSelectedCategory] = useState<string>("todas");
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [prods, setProds] = useState<Product[]>(PRODUCTS);
 
-  const newDesigns = PRODUCTS.filter((p) => p.isNewDesign);
+  useEffect(() => {
+    fetchProductsFromSupabase().then((data) => {
+      if (data && data.length > 0) setProds(data);
+    });
+  }, []);
+
+  const newDesigns = prods.filter((p) => p.isNewDesign);
 
   const filteredItems = selectedCategory === "todas"
     ? newDesigns

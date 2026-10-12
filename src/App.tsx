@@ -20,10 +20,15 @@ import {
 } from "@/components/site/Sections";
 import { OrderForm, WhatsAppFloat } from "@/components/site/OrderForm";
 import { ThumbNav } from "@/components/site/ThumbNav";
+import { AdminDashboard } from "@/components/admin/AdminDashboard";
+import { AdminLoginModal } from "@/components/admin/AdminLoginModal";
+import { supabase } from "@/lib/supabase";
 
 export default function App() {
   const [selectedCreation, setSelectedCreation] = useState<string>("");
   const [view, setView] = useState<"home" | "shop">("home");
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   // Sync hash with view state
   useEffect(() => {
@@ -65,6 +70,15 @@ export default function App() {
       }
     }, 100);
   };
+
+  async function handleOpenAdmin() {
+    const { data } = await supabase.auth.getSession();
+    if (data.session) {
+      setIsAdminOpen(true);
+    } else {
+      setIsLoginModalOpen(true);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground antialiased selection:bg-secondary selection:text-foreground pb-20 lg:pb-0">
@@ -121,14 +135,28 @@ export default function App() {
         )}
       </main>
 
-      {/* Footer */}
-      <Footer />
+      {/* Footer with Admin trigger */}
+      <Footer onOpenAdmin={handleOpenAdmin} />
 
       {/* Desktop Floating WhatsApp Button */}
       <WhatsAppFloat />
 
       {/* Mobile Ergonomic Thumb-First Navigation Menu */}
       <ThumbNav currentView={view} onNavigateView={handleNavigateView} />
+
+      {/* Admin Login Modal (Supabase Auth) */}
+      {isLoginModalOpen && (
+        <AdminLoginModal
+          onClose={() => setIsLoginModalOpen(false)}
+          onLoginSuccess={() => {
+            setIsLoginModalOpen(false);
+            setIsAdminOpen(true);
+          }}
+        />
+      )}
+
+      {/* Admin Dashboard Modal */}
+      {isAdminOpen && <AdminDashboard onClose={() => setIsAdminOpen(false)} />}
     </div>
   );
 }

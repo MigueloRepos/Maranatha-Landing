@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Sparkles,
   Search,
@@ -21,6 +21,7 @@ import { buildProductWhatsAppMessage, whatsappLink } from "@/lib/order";
 import { ScrollReveal, StaggerContainer, StaggerItem } from "@/components/ui/ScrollReveal";
 import { Lightbox, type LightboxItem } from "@/components/site/Lightbox";
 import { Button } from "@/components/ui/button";
+import { fetchProductsFromSupabase, fetchCategoriesFromSupabase } from "@/services/supabaseService";
 
 interface CartItem {
   product: Product;
@@ -41,9 +42,21 @@ export function ShopPage({ onBackToHome, onSelectProductForCustomOrder }: ShopPa
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
+  const [prods, setProds] = useState<Product[]>(PRODUCTS);
+  const [cats, setCats] = useState<string[]>(() => [...CATEGORIES_LIST]);
+
+  useEffect(() => {
+    fetchProductsFromSupabase().then((data) => {
+      if (data && data.length > 0) setProds(data);
+    });
+    fetchCategoriesFromSupabase().then((data) => {
+      if (data && data.length > 0) setCats(data);
+    });
+  }, []);
+
   // Filter products based on category, search query, and portion
   const filteredProducts = useMemo(() => {
-    return PRODUCTS.filter((p) => {
+    return prods.filter((p) => {
       const matchesCategory = selectedCategory === "todas" || p.category === selectedCategory;
       const matchesSearch =
         !searchQuery.trim() ||
@@ -63,7 +76,7 @@ export function ShopPage({ onBackToHome, onSelectProductForCustomOrder }: ShopPa
 
       return matchesCategory && matchesSearch && matchesPortion;
     });
-  }, [selectedCategory, searchQuery, portionFilter]);
+  }, [prods, selectedCategory, searchQuery, portionFilter]);
 
   const lightboxItems: LightboxItem[] = filteredProducts.map((p) => ({
     id: p.id,

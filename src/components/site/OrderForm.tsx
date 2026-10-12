@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { WHATSAPP_NUMBER, isWhatsAppConfigured } from "@/config/site";
 import { CREATION_TYPES, OCCASIONS, buildSummary, buildWhatsAppOrderMessage, orderSchema, whatsappLink } from "@/lib/order";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
+import { logWhatsAppOrderToSupabase } from "@/services/supabaseService";
 
 type Errors = Partial<Record<string, string>>;
 const fieldCls =
@@ -51,6 +52,14 @@ export function OrderForm({ selectedCreation }: OrderFormProps = {}) {
     const formattedWaMsg = buildWhatsAppOrderMessage(res.data);
     setSummary(formattedSummary);
     setWhatsappText(formattedWaMsg);
+
+    // Log to Supabase and localStorage
+    logWhatsAppOrderToSupabase({
+      clientName: res.data.name,
+      clientContact: res.data.contact,
+      itemSummary: res.data.creation,
+      fullMessage: formattedWaMsg,
+    });
 
     if (openWhatsAppDirectly && wa) {
       const link = whatsappLink(WHATSAPP_NUMBER, formattedWaMsg);

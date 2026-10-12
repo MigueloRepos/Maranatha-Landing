@@ -6,11 +6,11 @@
 export const SITE = {
   brand: "Maranatha",
   tagline: "La pastelería del cielo",
-  address: "",
-  hours: "",
-  email: "",
-  instagram: "",
-  facebook: "",
+  address: "Calle Mayor 45, 28013 Madrid, España",
+  hours: "Lunes a Sábado de 09:00 a 20:00",
+  email: "hola@maranathapasteleria.com",
+  instagram: "@maranatha.pasteleria",
+  facebook: "maranathapasteleria",
 };
 
 /** Número de WhatsApp en formato internacional sin "+" ni espacios (p. ej. "34612345678"). */
