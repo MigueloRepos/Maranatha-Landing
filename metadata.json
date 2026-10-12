@@ -1,0 +1,6 @@
+{
+  "name": "Maranatha - La pastelería del cielo",
+  "description": "Pastelería artesanal Maranatha: creaciones hechas a mano para celebraciones, catálogo y solicitud de encargos especiales.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
