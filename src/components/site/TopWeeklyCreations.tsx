@@ -23,7 +23,10 @@ export function TopWeeklyCreations({ onSelectProductForOrder }: TopWeeklyProps =
     });
   }, []);
 
-  const bestsellers = prods.filter((p) => p.isWeeklyTop);
+  const bestsellers = prods
+    .filter((p) => p.isWeeklyTop)
+    .sort((a, b) => (a.weeklyRank || 1) - (b.weeklyRank || 1))
+    .slice(0, 3);
 
   const filteredItems = selectedCategory === "todas"
     ? bestsellers

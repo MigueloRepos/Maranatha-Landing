@@ -23,7 +23,9 @@ export function NewDesigns({ onSelectProductForOrder }: NewDesignsProps = {}) {
     });
   }, []);
 
-  const newDesigns = prods.filter((p) => p.isNewDesign);
+  const newDesigns = prods
+    .filter((p) => p.isNewDesign)
+    .slice(0, 3);
 
   const filteredItems = selectedCategory === "todas"
     ? newDesigns

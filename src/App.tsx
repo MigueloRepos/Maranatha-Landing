@@ -111,8 +111,6 @@ export default function App() {
             {/* Nuevos diseños según su categoría */}
             <NewDesigns onSelectProductForOrder={handleSelectCreationForOrder} />
 
-            {/* Creaciones artesanales destacadas con Lightbox y ficha modal */}
-            <Creations onSelectCreationForOrder={handleSelectCreationForOrder} />
 
             {/* Esencia de la marca */}
             <Essence />
